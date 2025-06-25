@@ -6,7 +6,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/docker/docker/api/types/container"
 	"io"
 	"log"
 	"net/http"
@@ -16,6 +15,8 @@ import (
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/docker/docker/api/types/container"
 
 	"github.com/dependabot/cli/internal/model"
 	"github.com/dependabot/cli/internal/server"
@@ -273,6 +274,8 @@ var packageManagerLookup = map[string]string{
 	"swift":          "swift",
 	"devcontainers":  "devcontainers",
 	"uv":             "uv",
+	"vcpkg":          "vcpkg",
+	"rust_toolchain": "rust-toolchain",
 }
 
 func setImageNames(params *RunParams) error {
@@ -423,11 +426,17 @@ func runContainers(ctx context.Context, params RunParams) (err error) {
 			return err
 		}
 	} else {
+		// First, update CA certificates as root
+		if err := updater.RunCmd(ctx, "update-ca-certificates", root); err != nil {
+			return err
+		}
+
+		// Then run the dependabot commands as the dependabot user
 		env := userEnv(prox.url, params.ApiUrl)
 		if params.Flamegraph {
 			env = append(env, "FLAMEGRAPH=1")
 		}
-		const cmd = "update-ca-certificates && bin/run fetch_files && bin/run update_files"
+		const cmd = "bin/run fetch_files && bin/run update_files"
 		if err := updater.RunCmd(ctx, cmd, dependabot, env...); err != nil {
 			return err
 		}
