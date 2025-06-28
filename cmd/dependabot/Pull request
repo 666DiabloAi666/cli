@@ -1,0 +1,105 @@
+
+That means Dependabot couldn’t create a PR because the branch it generated conflicts with existing code in a way that prevents a clean merge.
+
+
+---
+
+🔍 Root Cause
+
+Dependabot tries to update a dependency (e.g. a version bump in yarn.lock or package.json) and push it to a new branch. But:
+
+The branch it wants to create already exists with conflicting code
+
+Or, the base branch (e.g. main) has diverged too far from where the bot ran
+
+Or your repo may have force-pushed/amended history causing reference mismatches
+
+
+
+---
+
+✅ How to Fix It
+
+🧹 1. Delete the broken branch
+
+If the Dependabot branch already exists but is broken, delete it:
+
+# Replace with actual branch name
+git push origin --delete dependabot/yarn/example-package-x.y.z
+
+Or delete it via the GitHub UI under Branches tab.
+
+
+---
+
+🛠 2. Re-run Dependabot
+
+Trigger it manually again by:
+
+Going to GitHub → Insights → Dependency graph → Dependabot
+
+Or editing .github/dependabot.yml and committing a small change (e.g., bumping the schedule.interval)
+
+Or using the GitHub CLI:
+
+
+gh api \
+  -X POST \
+  -H "Accept: application/vnd.github+json" \
+  /repos/:owner/:repo/dependabot/updates \
+  -f package-ecosystem=yarn \
+  -f directory=/ \
+  -f target-branch=main
+
+
+---
+
+🧪 3. Verify yarn.lock and package.json manually
+
+Sometimes the repo has custom lockfile settings or pinning that trip up Dependabot.
+
+Make sure yarn.lock is consistent with package.json
+
+Try running:
+
+
+yarn install --check-files
+yarn audit
+
+If the lockfile looks stale or corrupted, run:
+
+rm yarn.lock
+yarn install
+
+Then commit and push it manually.
+
+
+---
+
+🧱 4. Check Dependabot Version Constraints
+
+Make sure .github/dependabot.yml isn't requesting incompatible versions or unreachable targets.
+
+Example config:
+
+updates:
+  - package-ecosystem: "yarn"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    versioning-strategy: increase
+
+If it’s set to lockfile-only, make sure the lockfile isn’t blocked by outdated sub-dependencies.
+
+
+---
+
+🧩 Optional: Switch to GitHub Actions Debug Mode
+
+Add a step in .github/workflows/dependabot-auto-rebase.yml to debug branches, fetch diffs, or log conflicts before PR attempts.
+
+
+---
+
+Want me to generate a fixed .dependabot.yml, clean-up script, or GitHub Action to auto-resolve broken Dependabot branches? Just say the word.
+
