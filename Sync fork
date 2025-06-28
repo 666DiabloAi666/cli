@@ -1,0 +1,57 @@
+To sync your fork (666DiabloAi666/cli) with the upstream repo (dependabot/cli), follow these steps:
+
+
+---
+
+Using Git CLI (recommended)
+
+1. Add the upstream remote (if not already):
+
+
+
+git remote add upstream https://github.com/dependabot/cli.git
+
+2. Fetch the upstream branches:
+
+
+
+git fetch upstream
+
+3. Check out your local main branch (or default):
+
+
+
+git checkout main
+
+4. Merge upstream main into your local main:
+
+
+
+git merge upstream/main
+
+5. Resolve any merge conflicts if they arise.
+
+
+6. Push the synced main branch back to your fork:
+
+
+
+git push origin main
+
+
+---
+
+Using GitHub Web UI (alternative)
+
+Go to your fork on GitHub
+
+Click Compare button (if shown)
+
+If it shows your fork is behind, click Update branch button to sync.
+
+
+
+---
+
+If you want me to generate a full sync script or automate this with GitHub Actions, I can do that too. Just say!
+
